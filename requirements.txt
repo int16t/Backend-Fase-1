@@ -1,0 +1,14 @@
+fastapi==0.129.0
+uvicorn==0.41.0
+SQLAlchemy==2.0.46
+psycopg2-binary==2.9.11
+pydantic==2.12.5
+pydantic_core==2.41.5
+httpx==0.28.1
+sqlmodel==0.0.34
+
+#testing
+pytest==9.0.2
+
+#tools
+alembic==1.18.4
