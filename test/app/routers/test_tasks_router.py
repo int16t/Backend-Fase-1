@@ -1,8 +1,7 @@
 from fastapi import testclient
 from app.main import app
-from app.routers.tasks import Task_response
 from app.database import get_session
-from app.models.model_tasks import Task  # Importar para registrar no metadata
+import app.schemas.task_schemas as schemas
 from sqlmodel import SQLModel, Session, create_engine
 from sqlmodel.pool import StaticPool  
 import pytest
@@ -39,7 +38,7 @@ def test_create_task(client: testclient.TestClient):
     new_task = {"title": "Task 1", "description": "Description of task 1"}
     response = client.post("/tasks/create-task", json=new_task)
     assert response.status_code == 201
-    assert response.json() == Task_response(title=new_task["title"], description=new_task["description"]).model_dump()
+    assert response.json() == schemas.Task_Response(id=1, title=new_task["title"], description=new_task["description"]).model_dump()
 
 
 def test_read_tasks(client: testclient.TestClient):
@@ -56,31 +55,30 @@ def test_read_tasks(client: testclient.TestClient):
 def test_read_task(client: testclient.TestClient):
     # Criar task primeiro
     client.post("/tasks/create-task", json={"title": "Task 1", "description": "Description of task 1"})
-    
     task_id = 1
     response = client.get(f"/tasks/{task_id}")
     assert response.status_code == 200
-    assert response.json() == {"id": task_id, "title": "Task 1", "description": "Description of task 1"}
+    assert response.json() == schemas.Task_Response(id=task_id, title="Task 1", description="Description of task 1").model_dump()
 
 
 def test_update_task(client: testclient.TestClient):
     # Criar task primeiro
     client.post("/tasks/create-task", json={"title": "Task 1", "description": "Description of task 1"})
-    
     task_id = 1
     updated_task = {"title": "Task 1 Updated", "description": "Description of task 1 updated"}
     response = client.put(f"/tasks/update-task/{task_id}", json=updated_task)
     assert response.status_code == 200
-    assert response.json() == Task_response(title=updated_task["title"], description=updated_task["description"]).model_dump()
+    assert response.json() == schemas.Task_Response(id=task_id, title=updated_task["title"], description=updated_task["description"]).model_dump()
 
 
 def test_delete_task(client: testclient.TestClient):
-    # Criar task primeiro
+    # Criar task primeiroimport app.crud.crud_tasks as crud
+
     client.post("/tasks/create-task", json={"title": "Task 1", "description": "Description of task 1"})
-    
     task_id = 1
     response = client.delete(f"/tasks/delete-task/{task_id}")
     assert response.status_code == 204
+
 
 # Verifica se a task não excede o tamanho máximo permitido
 def test_create_task_with_long_title(client: testclient.TestClient):
@@ -96,3 +94,45 @@ def test_create_task_with_long_description(client: testclient.TestClient):
     new_task = {"title": "Task with long description", "description": long_description}
     response = client.post("/tasks/create-task", json=new_task)
     assert response.status_code == 422  # Unprocessable Entity
+
+
+def test_create_task_with_empty_title(client: testclient.TestClient):
+    new_task = {"title": "", "description": "Description of task with empty title"}
+    response = client.post("/tasks/create-task", json=new_task)
+    assert response.status_code == 422  # Unprocessable Entity
+
+
+def test_task_not_found(client: testclient.TestClient):
+    task_id = 999  # ID que não existe
+    response = client.get(f"/tasks/{task_id}")
+    assert response.status_code == 404  # Task not found
+    assert response.json() == {"detail": "Task not found"}
+
+
+def test_read_task_by_title(client: testclient.TestClient):
+    client.post("/tasks/create-task", json={"title": "Task 1", "description": "Description of task 1"})
+    response = client.get("/tasks/by-title/?title=Task 1")
+    assert response.status_code == 200
+    assert response.json() == schemas.Task_Response(id=1, title="Task 1", description="Description of task 1").model_dump()
+
+
+def test_read_task_by_title_not_found(client: testclient.TestClient):
+    response = client.get("/tasks/by-title/?title=Nonexistent Task")
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Task not found"}
+
+
+def test_update_task_not_found(client: testclient.TestClient):
+    client.post("/tasks/create-task", json={"title": "Task 1", "description": "Description of task 1"})
+    task_id = 999 
+    updated_task = {"title": "Task 1 Updated", "description": "Description of task 1 updated"}
+    response = client.put(f"/tasks/update-task/{task_id}", json=updated_task)
+    assert response.status_code == 404  # Task not found
+    assert response.json() == {"detail": "Task not found"}
+
+
+def test_delete_task_not_found(client: testclient.TestClient):
+    client.post("/tasks/create-task", json={"title": "Task 1", "description": "Description of task 1"})
+    task_id = 999 
+    response = client.delete(f"/tasks/delete-task/{task_id}")
+    assert response.status_code == 404  # Task not found
