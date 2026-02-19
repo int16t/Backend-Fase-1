@@ -72,3 +72,17 @@ def test_delete_user(client: testclient.TestClient):
     user_id = 1
     response = client.delete(f"/users/delete-user/{user_id}")
     assert response.status_code == 204
+
+
+def test_create_user_with_long_name(client: testclient.TestClient):
+    long_name = "N" * 101  # 101 caracteres, excedendo o limite de 100
+    new_user = {"name": long_name, "email": "alice@example.com"}
+    response = client.post("/users/create-user", json=new_user)
+    assert response.status_code == 422  # Unprocessable Entity
+
+
+def test_create_user_with_long_email(client: testclient.TestClient):
+    long_email = "E" * 18 + "@example.com.br"  # Excedendo o limite de 30 caracteres para o email
+    new_user = {"name": "Alice", "email": long_email}
+    response = client.post("/users/create-user", json=new_user)
+    assert response.status_code == 422  # Unprocessable Entity

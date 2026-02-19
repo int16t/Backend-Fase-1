@@ -2,7 +2,7 @@ from typing_extensions import Annotated
 from app.database import SessionDep
 from app.models.model_tasks import Task
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlmodel import select
 
 router = APIRouter(
@@ -12,12 +12,12 @@ router = APIRouter(
 
 class Task_base(BaseModel):
     id: int
-    title: str
-    description: str
+    title: str = Field(min_length=1, max_length=100)
+    description: str = Field(min_length=1, max_length=200)
 
 class Task_response(BaseModel):
-    title: str
-    description: str
+    title: str = Field(min_length=1, max_length=100)
+    description: str = Field(min_length=1, max_length=200)
 
 @router.get("/")
 async def read_tasks(

@@ -81,3 +81,18 @@ def test_delete_task(client: testclient.TestClient):
     task_id = 1
     response = client.delete(f"/tasks/delete-task/{task_id}")
     assert response.status_code == 204
+
+# Verifica se a task não excede o tamanho máximo permitido
+def test_create_task_with_long_title(client: testclient.TestClient):
+    long_title = "T" * 101  # 101 caracteres, excedendo o limite de 100
+    new_task = {"title": long_title, "description": "Description of task with long title"}
+    response = client.post("/tasks/create-task", json=new_task)
+    assert response.status_code == 422  # Unprocessable Entity
+
+
+# Verifica se a descrição da task não excede o tamanho máximo permitido
+def test_create_task_with_long_description(client: testclient.TestClient):
+    long_description = "D" * 201  # 201 caracteres, excedendo o limite de 200
+    new_task = {"title": "Task with long description", "description": long_description}
+    response = client.post("/tasks/create-task", json=new_task)
+    assert response.status_code == 422  # Unprocessable Entity

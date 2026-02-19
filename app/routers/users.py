@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from app.database import SessionDep
 from typing_extensions import Annotated
-from sqlmodel import select
+from sqlmodel import Field, select
 from app.models.model_users import User
 
 
@@ -13,12 +13,13 @@ router = APIRouter(
 
 class User_base(BaseModel):
     id: int
-    name: str
-    email: str
+    name: str = Field(min_length=1, max_length=100)
+    email: str = Field(min_length=1, max_length=30)
+
 
 class User_response(BaseModel):
-    name: str
-    email: str
+    name: str = Field(min_length=1, max_length=100)
+    email: str = Field(min_length=1, max_length=30)
 
 
 @router.get("/")
