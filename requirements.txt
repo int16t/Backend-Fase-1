@@ -6,6 +6,9 @@ pydantic==2.12.5
 pydantic_core==2.41.5
 httpx==0.28.1
 sqlmodel==0.0.34
+dnspython==2.8.0
+email-validator==2.3.0
+
 
 #testing
 pytest==9.0.2

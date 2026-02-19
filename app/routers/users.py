@@ -3,10 +3,6 @@ from app.database import SessionDep
 from typing_extensions import Annotated
 import app.schemas.user_schemas as schemas
 import app.crud.crud_users as crud
-import re
-
-
-pattern = r'^[^@]+@[^@]+$'
 
 router = APIRouter(
     prefix="/users",
@@ -39,8 +35,6 @@ async def read_user_by_email(email: str, session: SessionDep):
     user = crud.get_user_by_email(session, email)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if not re.match(pattern, user.email):
-        raise HTTPException(status_code=422, detail="Invalid email format")
     return user
 
 
@@ -49,8 +43,6 @@ async def create_user(user: schemas.User_Create, session: SessionDep):
     db_user = crud.create_user(session, name=user.name, email=user.email)
     if not db_user:
         raise HTTPException(status_code=400, detail="User could not be created")
-    if not re.match(pattern, db_user.email):
-        raise HTTPException(status_code=422, detail="Invalid email format")
     return db_user
 
 
@@ -59,8 +51,6 @@ async def update_user(user_id: int, user: schemas.User_Update, session: SessionD
     db_user = crud.update_user(session, user_id=user_id, name=user.name, email=user.email)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
-    if not re.match(pattern, db_user.email):
-        raise HTTPException(status_code=422, detail="Invalid email format")
     return db_user
 
 
