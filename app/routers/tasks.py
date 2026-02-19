@@ -29,10 +29,19 @@ async def read_task(task_id: int, session: SessionDep):
         raise HTTPException(status_code=404, detail="Task not found")
     return id_task
 
+@router.get("/by-title/")
+async def read_task_by_title(title: str, session: SessionDep):
+    task = crud.get_task_by_title(session, title)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task
+
 
 @router.post("/create-task", status_code=201)
 async def create_task(task: schemas.Task_Create, session: SessionDep):
     db_task = crud.create_task(session, title=task.title, description=task.description)
+    if db_task.title == "":
+        raise HTTPException(status_code=422)
     return db_task
 
 
