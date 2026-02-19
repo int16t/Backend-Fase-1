@@ -11,51 +11,29 @@ router = APIRouter(
 
 
 @router.get("/")
-async def read_tasks(
-    session: SessionDep,
-    offset: int = 0,
-    limit: Annotated[int, Query(le=100)] = 100,
-    ):
-    tasks = crud.get_tasks(session, offset, limit)
-    if not tasks:
-        raise HTTPException(status_code=404, detail="No tasks found")
-    return tasks
+async def read_tasks(session: SessionDep):
+    return crud.get_tasks(session)
 
 
 @router.get("/{task_id}")
 async def read_task(task_id: int, session: SessionDep):
-    id_task = crud.get_task_by_id(session, task_id)
-    if not id_task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return id_task
+    return crud.get_task_by_id(session, task_id=task_id)
 
 @router.get("/by-title/")
 async def read_task_by_title(title: str, session: SessionDep):
-    task = crud.get_task_by_title(session, title)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return task
+    return crud.get_task_by_title(session, title=title)
 
 
 @router.post("/create-task", status_code=201)
 async def create_task(task: schemas.Task_Create, session: SessionDep):
-    db_task = crud.create_task(session, title=task.title, description=task.description)
-    if db_task.title == "":
-        raise HTTPException(status_code=422)
-    return db_task
+    return crud.create_task(session, title=task.title, description=task.description)
 
 
 @router.put("/update-task/{task_id}", status_code=200)
 async def update_task(task_id: int, task: schemas.Task_Update, session: SessionDep):
-    db_task = crud.update_task(session, task_id=task_id, title=task.title, description=task.description)
-    if not db_task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return db_task
+    return crud.update_task(session, task_id=task_id, title=task.title, description=task.description)
 
 
 @router.delete("/delete-task/{task_id}", status_code=204)
 async def delete_task(task_id: int, session: SessionDep):
-    deleted = crud.delete_task(session, task_id=task_id)
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Task not found")
-    pass
+    return crud.delete_task(session, task_id=task_id)

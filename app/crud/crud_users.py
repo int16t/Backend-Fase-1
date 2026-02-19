@@ -1,24 +1,33 @@
 from sqlmodel import Session, select
 from app.models.model_users import User
+import app.exceptions as exceptions
 
 
 def get_users(session: Session, offset: int = 0, limit: int = 100) -> list[User]:
-    """Retorna lista de usuários com paginação."""
-    return session.exec(select(User).offset(offset).limit(limit)).all()
+    users = session.exec(select(User).offset(offset).limit(limit)).all()
+    if not users:
+        raise exceptions.NotFound(name="Users")
+    return users
 
 
 def get_user_by_id(session: Session, user_id: int) -> User | None:
-    """Retorna um usuário pelo ID ou None se não existir."""
-    return session.get(User, user_id)
+    db_user = session.get(User, user_id)
+    if not db_user:
+        raise exceptions.NotFound(name="User")
+    return db_user
 
 
 def get_user_by_email(session: Session, email: str) -> User | None:
-    """Retorna um usuário pelo email ou None se não existir."""
-    return session.exec(select(User).where(User.email == email)).first()
+    db_user = session.exec(select(User).where(User.email == email)).first()
+    if not db_user:
+        raise exceptions.NotFound(name="User")
+    return db_user
 
 
 def create_user(session: Session, name: str, email: str) -> User:
-    """Cria um novo usuário no banco de dados."""
+    existing = session.exec(select(User).where(User.email == email)).first()
+    if existing:
+        raise exceptions.EmailAlreadyExistsError(email=email)
     db_user = User(name=name, email=email)
     session.add(db_user)
     session.commit()
@@ -27,10 +36,9 @@ def create_user(session: Session, name: str, email: str) -> User:
 
 
 def update_user(session: Session, user_id: int, name: str, email: str) -> User | None:
-    """Atualiza um usuário existente. Retorna None se não encontrar."""
     db_user = session.get(User, user_id)
     if not db_user:
-        return None
+        raise exceptions.NotFound(name="User")
     db_user.name = name
     db_user.email = email
     session.commit()
@@ -39,10 +47,9 @@ def update_user(session: Session, user_id: int, name: str, email: str) -> User |
 
 
 def delete_user(session: Session, user_id: int) -> bool:
-    """Deleta um usuário. Retorna True se deletou, False se não encontrou."""
     db_user = session.get(User, user_id)
     if not db_user:
-        return False
+        raise exceptions.NotFound(name="User")
     session.delete(db_user)
     session.commit()
-    return True
+    return bool(db_user)
