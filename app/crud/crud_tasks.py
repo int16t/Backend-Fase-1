@@ -11,6 +11,11 @@ def get_task_by_id(session: Session, task_id: int) -> Task | None:
     return session.get(Task, task_id)
 
 
+def get_task_by_title(session: Session, title: str) -> Task | None:
+    """Retorna uma tarefa pelo título ou None se não existir."""
+    return session.exec(select(Task).where(Task.title == title)).first()
+
+
 def create_task(session: Session, title: str, description: str) -> Task:
     """Cria uma nova tarefa no banco de dados."""
     db_task = Task(title=title, description=description)
