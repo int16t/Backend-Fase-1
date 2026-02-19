@@ -1,15 +1,15 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from app.exceptions import EmailAlreadyExistsError, NotFound
+from fastapi import FastAPI, Request
 from app.routers import tasks, users
-# from app.database import create_db_and_tables
 from app.models import *  # Importa os modelos para registrar no SQLModel.metadata
+from fastapi.responses import JSONResponse
 import uvicorn
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Código que roda na inicialização
-    # create_db_and_tables()
     yield
     # Código que roda no encerramento (opcional)
 
@@ -21,6 +21,14 @@ app = FastAPI(lifespan=lifespan)
 async def root_directory() -> str:
     return "Hello, World!"
 
+
+@app.exception_handler(NotFound)
+async def not_found_handler(request: Request, exc: NotFound):
+    return JSONResponse(status_code=404, content={"detail": f"{exc.name} not found"})
+
+@app.exception_handler(EmailAlreadyExistsError)
+async def email_exists_handler(request: Request, exc: EmailAlreadyExistsError):
+    return JSONResponse(status_code=409, content={"detail": f"Email {exc.email} already exists"})
 
 app.include_router(tasks.router)
 app.include_router(users.router)
