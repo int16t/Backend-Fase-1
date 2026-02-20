@@ -35,14 +35,14 @@ def client_fixture(session):
 
 
 def test_create_user(client: testclient.TestClient):
-    new_user = {"name": "Alice", "email": "alice@example.com"}
-    response = client.post("/users/create-user", json=new_user)
+    new_user = {"name": "Alice", "email": "alice@example.com", "password": "secret123"}
+    response = client.post("/auth/register", json=new_user)
     assert response.status_code == 201
     assert response.json() == User_Response(id=1, name=new_user["name"], email=new_user["email"]).model_dump()
 
 
 def test_read_user(client: testclient.TestClient):
-    client.post("/users/create-user", json={"name": "Alice", "email": "alice@example.com"})
+    client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
     user_id = 1
     response = client.get(f"/users/{user_id}")
     assert response.status_code == 200
@@ -50,14 +50,14 @@ def test_read_user(client: testclient.TestClient):
 
 
 def test_read_user_by_email(client: testclient.TestClient):
-    client.post("/users/create-user", json={"name": "Alice", "email": "alice@example.com"})
+    client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
     response = client.get("/users/by-email/?email=alice@example.com")
     assert response.status_code == 200
     assert response.json() == User_Response(id=1, name="Alice", email="alice@example.com").model_dump()
 
 
 def test_update_user(client: testclient.TestClient):
-    client.post("/users/create-user", json={"name": "Alice", "email": "alice@example.com"})
+    client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
     user_id = 1
     updated_user = {"name": "Alice Updated", "email": "alice.updated@example.com"}
     response = client.put(f"/users/update-user/{user_id}", json=updated_user)
@@ -66,7 +66,7 @@ def test_update_user(client: testclient.TestClient):
 
 
 def test_delete_user(client: testclient.TestClient):
-    client.post("/users/create-user", json={"name": "Alice", "email": "alice@example.com"}) 
+    client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
     user_id = 1
     response = client.delete(f"/users/delete-user/{user_id}")
     assert response.status_code == 204
@@ -74,22 +74,22 @@ def test_delete_user(client: testclient.TestClient):
 
 def test_create_user_with_long_name(client: testclient.TestClient):
     long_name = "N" * 101  # 101 caracteres, excedendo o limite de 100
-    new_user = {"name": long_name, "email": "alice@example.com"}
-    response = client.post("/users/create-user", json=new_user)
+    new_user = {"name": long_name, "email": "alice@example.com", "password": "secret123"}
+    response = client.post("/auth/register", json=new_user)
     assert response.status_code == 422  # Unprocessable Entity
 
 
 def test_create_user_with_long_email(client: testclient.TestClient):
     long_email = "E" * 18 + "@example.com.br"  # Excedendo o limite de 30 caracteres para o email
-    new_user = {"name": "Alice", "email": long_email}
-    response = client.post("/users/create-user", json=new_user)
+    new_user = {"name": "Alice", "email": long_email, "password": "secret123"}
+    response = client.post("/auth/register", json=new_user)
     assert response.status_code == 422  # Unprocessable Entity
 
 
 def test_create_user_with_invalid_email(client: testclient.TestClient):
     invalid_email = "invalid-email"  # Email sem formato válido
-    new_user = {"name": "Alice", "email": invalid_email}
-    response = client.post("/users/create-user", json=new_user)
+    new_user = {"name": "Alice", "email": invalid_email, "password": "secret123"}
+    response = client.post("/auth/register", json=new_user)
     assert response.status_code == 422  # Unprocessable Entity
 
 
@@ -100,15 +100,15 @@ def test_user_not_found(client: testclient.TestClient):
     assert response.json() == {"detail": "User not found"}
 
 
-def test_read_user_by_email(client: testclient.TestClient):
-    client.post("/users/create-user", json={"name": "Alice", "email": "alice@example.com"})
+def test_read_user_by_email_not_found(client: testclient.TestClient):
+    client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
     response = client.get("/users/by-email/?email=test@example.com")
     assert response.status_code == 404  # User not found
     assert response.json() == {"detail": "User not found"}
 
 
 def test_update_user_not_found(client: testclient.TestClient):
-    client.post("/users/create-user", json={"name": "Alice", "email": "alice@example.com"})
+    client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
     user_id = 999 
     updated_user = {"name": "Alice Updated", "email": "alice.updated@example.com"}
     response = client.put(f"/users/update-user/{user_id}", json=updated_user)
@@ -117,7 +117,7 @@ def test_update_user_not_found(client: testclient.TestClient):
 
 
 def test_delete_user_not_found(client: testclient.TestClient):
-    client.post("/users/create-user", json={"name": "Alice", "email": "alice@example.com"}) 
+    client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
     user_id = 999 
     response = client.delete(f"/users/delete-user/{user_id}")
     assert response.status_code == 404  # User not found

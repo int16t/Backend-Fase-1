@@ -9,3 +9,5 @@ class User(SQLModel, table=True):
     name: str = Field(index=True)
     email: str | None = Field(index=True)
     tasks: list["Task"] = Relationship(back_populates="owner")
+    password_hash: str
+    is_admin: bool = False

@@ -1,6 +1,8 @@
 from fastapi import testclient
 from app.main import app
 from app.database import get_session
+from app.dependencies.auth import require_admin
+from app.models.model_users import User
 from sqlmodel import SQLModel, Session, create_engine
 from sqlmodel.pool import StaticPool  
 import pytest
@@ -25,8 +27,12 @@ def session_fixture():
 def client_fixture(session):
     def get_session_override():
         return session
-    
+
+    def require_admin_override():
+        return User(id=1, name="Admin", email="admin@example.com", password_hash="", is_admin=True)
+
     app.dependency_overrides[get_session] = get_session_override
+    app.dependency_overrides[require_admin] = require_admin_override
 
     client = testclient.TestClient(app)
     yield client
@@ -34,7 +40,7 @@ def client_fixture(session):
 
 
 def test_read_tasks(client: testclient.TestClient):
-    db_user = client.post("users/create-user", json={"name":"Alice","email":"alice@example.com"})
+    db_user = client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
     user_id = db_user.json()["id"]
 
     client.post(f"/admin/users/{user_id}/task", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id})
@@ -49,8 +55,8 @@ def test_read_tasks(client: testclient.TestClient):
 
 
 def test_read_users(client: testclient.TestClient):
-    client.post("users/create-user", json={"name":"Alice","email":"alice@example.com"})
-    client.post("users/create-user", json={"name":"Breno","email":"breno@example.com"})
+    client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    client.post("/auth/register", json={"name":"Breno","email":"breno@example.com","password":"secret123"})
     response = client.get("/admin/users")
     assert response.status_code == 200
     users = response.json()

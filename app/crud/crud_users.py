@@ -1,6 +1,7 @@
 from sqlmodel import Session, select
 from app.models.model_users import User
 import app.exceptions as exceptions
+from app.auth import auth
 
 def not_allowed():
     return exceptions.NotAllowed(name="?")
@@ -27,11 +28,12 @@ def get_user_by_email(session: Session, email: str) -> User | None:
     return db_user
 
 
-def create_user(session: Session, name: str, email: str) -> User:
+def create_user(session: Session, name: str, email: str, password: str) -> User:
     existing = session.exec(select(User).where(User.email == email)).first()
     if existing:
         raise exceptions.EmailAlreadyExistsError(email=email)
-    db_user = User(name=name, email=email)
+    password_hash = auth.hash_password(password)
+    db_user = User(name=name, email=email, password_hash=password_hash)
     session.add(db_user)
     session.commit()
     session.refresh(db_user)
