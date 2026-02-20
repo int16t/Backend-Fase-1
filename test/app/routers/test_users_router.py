@@ -49,16 +49,6 @@ def test_read_user(client: testclient.TestClient):
     assert response.json() == User_Response(id=user_id, name="Alice", email="alice@example.com").model_dump()
 
 
-def test_read_users(client: testclient.TestClient):
-    client.post("/users/create-user", json={"name": "Alice", "email": "alice@example.com"})
-    response = client.get("/users/")
-    assert response.status_code == 200
-    users = response.json()
-    assert len(users) >= 1
-    # Verifica se o usuário criado existe
-    assert any(u["name"] == "Alice" and u["email"] == "alice@example.com" for u in users)
-
-
 def test_read_user_by_email(client: testclient.TestClient):
     client.post("/users/create-user", json={"name": "Alice", "email": "alice@example.com"})
     response = client.get("/users/by-email/?email=alice@example.com")

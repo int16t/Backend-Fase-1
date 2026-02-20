@@ -2,6 +2,9 @@ from sqlmodel import Session, select
 from app.models.model_users import User
 import app.exceptions as exceptions
 
+def not_allowed():
+    return exceptions.NotAllowed(name="?")
+
 
 def get_users(session: Session, offset: int = 0, limit: int = 100) -> list[User]:
     users = session.exec(select(User).offset(offset).limit(limit)).all()

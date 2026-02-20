@@ -1,39 +1,45 @@
 from fastapi import APIRouter
 from app.database import SessionDep
-from typing_extensions import Annotated
-import app.schemas.user_schemas as schemas
-import app.crud.crud_users as crud
+import app.schemas.user_schemas as schemas_user
+import app.schemas.task_schemas as schemas_task
+import app.crud.crud_users as crud_users
+import app.crud.crud_tasks as crud_tasks
 
 router = APIRouter(
     prefix="/users",
     tags=["users"],
 )
 
-@router.get("/")
-async def read_users(session: SessionDep):
-    return crud.get_users(session)
+@router.get("/{user_id}/tasks", status_code=200)
+async def get_tasks_for_user(session: SessionDep):
+    return crud_tasks.get_tasks(session)
 
 
 @router.get("/{user_id}")
 async def read_user(user_id: int, session: SessionDep):
-    return crud.get_user_by_id(session, user_id=user_id)
+    return crud_users.get_user_by_id(session, user_id=user_id)
 
 
 @router.get("/by-email/")
 async def read_user_by_email(email: str, session: SessionDep):
-    return crud.get_user_by_email(session, email=email)
+    return crud_users.get_user_by_email(session, email=email)
+
+
+@router.post("/{user_id}/tasks", status_code=201)
+async def create_task_for_user(task: schemas_task.Task_Create, session: SessionDep):
+    return crud_tasks.create_task(session, title=task.title, description=task.description, user_id=task.user_id)
 
 
 @router.post("/create-user", status_code=201)
-async def create_user(user: schemas.User_Create, session: SessionDep):
-    return crud.create_user(session, name=user.name, email=user.email)
+async def create_user(user: schemas_user.User_Create, session: SessionDep):
+    return crud_users.create_user(session, name=user.name, email=user.email)
 
 
 @router.put("/update-user/{user_id}", status_code=200)
-async def update_user(user_id: int, user: schemas.User_Update, session: SessionDep):
-    return crud.update_user(session, user_id=user_id, name=user.name, email=user.email)
+async def update_user(user_id: int, user: schemas_user.User_Update, session: SessionDep):
+    return crud_users.update_user(session, user_id=user_id, name=user.name, email=user.email)
 
 
 @router.delete("/delete-user/{user_id}", status_code=204)
 async def delete_user(user_id: int, session: SessionDep):
-    return crud.delete_user(session, user_id=user_id)
+    return crud_users.delete_user(session, user_id=user_id)
