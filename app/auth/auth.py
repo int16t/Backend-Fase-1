@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 import bcrypt
+from app.config import SECRET_KEY
 
-SECRET_KEY = "sua-chave-secreta-aqui"  # mover para .env depois
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

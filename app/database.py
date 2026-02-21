@@ -1,9 +1,10 @@
 from typing import Annotated
 from fastapi import Depends
 from sqlmodel import Session, SQLModel, create_engine
+from app.config import DATABASE_URL
 
 # Configurações do banco de dados PostgreSQL
-DATABASE_URL = "postgresql://admin:admin123@localhost:5432/meubanco"
+
 
 engine = create_engine(DATABASE_URL)
 
