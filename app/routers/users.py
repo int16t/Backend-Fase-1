@@ -11,8 +11,8 @@ router = APIRouter(
 )
 
 @router.get("/{user_id}/tasks", status_code=200)
-async def get_tasks_for_user(session: SessionDep):
-    return crud_tasks.get_tasks(session)
+async def get_tasks_for_user(session: SessionDep, user_id: int):
+    return crud_tasks.get_tasks_user(session, user_id)
 
 
 @router.get("/{user_id}", response_model=schemas_user.User_Response)

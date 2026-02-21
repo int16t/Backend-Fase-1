@@ -5,6 +5,7 @@ import app.crud.crud_tasks as crud_tasks
 import app.schemas.task_schemas as schemas_task
 import app.schemas.user_schemas as schemas_user
 from app.dependencies import auth
+from typing import List
 
 
 router = APIRouter(
@@ -13,19 +14,19 @@ router = APIRouter(
     dependencies=[Depends(auth.require_admin)]
 )
 
-@router.get("/users")
+@router.get("/users", response_model=List[schemas_user.User_Response])
 async def read_all_users(session: SessionDep):
     return crud_users.get_users(session)
 
 
-@router.get("/tasks")
+@router.get("/tasks", response_model=List[schemas_task.Task_Response])
 async def read_all_tasks(session: SessionDep):
     return crud_tasks.get_tasks(session)
 
 
 @router.post("/create-user", status_code=201)
 async def create_user(user: schemas_user.User_Create, session: SessionDep):
-    return crud_users.create_user(session, name=user.name, email=user.email, password=user)
+    return crud_users.create_user(session, name=user.name, email=user.email, password=user.password)
 
 
 @router.post("/users/{user_id}/task")
