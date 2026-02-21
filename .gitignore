@@ -16,5 +16,7 @@ __pycache__/
 # Environment variables
 .env
 
-#comamands
+#comamands and config
 commands.txt
+create_admin.py
+
