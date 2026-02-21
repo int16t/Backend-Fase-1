@@ -8,9 +8,7 @@ def not_allowed():
 
 
 def get_users(session: Session, offset: int = 0, limit: int = 100) -> list[User]:
-    users = session.exec(select(User).offset(offset).limit(limit)).all()
-    if not users:
-        raise exceptions.NotFound(name="Users")
+    users = session.exec(select(User).order_by(User.id).offset(offset).limit(limit)).all()
     return users
 
 

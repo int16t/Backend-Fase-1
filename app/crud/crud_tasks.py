@@ -9,7 +9,12 @@ def not_allowed():
 
 
 def get_tasks(session: Session, offset: int = 0, limit: int = 100) -> list[Task]:
-    tasks = session.exec(select(Task).offset(offset).limit(limit)).all()
+    tasks = session.exec(select(Task).order_by(Task.id).offset(offset).limit(limit)).all()
+    return tasks
+
+
+def get_tasks_user(session: Session, user_id: int, offset: int = 0, limit: int = 100) -> list[Task]:
+    tasks = session.exec(select(Task).where(Task.user_id == user_id).offset(offset).limit(limit)).all()
     if not tasks:
         raise exceptions.NotFound(name="Tasks")
     return tasks
