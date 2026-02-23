@@ -63,18 +63,21 @@ Backend - Fase 1/
 | GET | `/users/{id}` | Buscar usuário por ID | ❌ |
 | GET | `/users/by-email/` | Buscar usuário por email | ❌ |
 | GET | `/users/{id}/tasks` | Listar tasks do usuário | ❌ |
-| POST | `/users/{id}/tasks` | Criar task para usuário | ❌ |
-| PUT | `/users/update-user/{id}` | Atualizar usuário | ❌ |
-| DELETE | `/users/delete-user/{id}` | Deletar usuário | ❌ |
+| POST | `/users/{id}/tasks` | Criar task para usuário | ✅ (Bearer — owner) |
+| PUT | `/users/update-user/{id}` | Atualizar usuário | ✅ (Bearer — owner) |
+| DELETE | `/users/delete-user/{id}` | Deletar usuário | ✅ (Bearer — owner) |
 | GET | `/tasks/{id}` | Buscar task por ID | ❌ |
 | GET | `/tasks/by-title/` | Buscar task por título | ❌ |
-| PUT | `/tasks/update-task/{id}` | Atualizar task | ❌ |
-| DELETE | `/tasks/delete-task/{id}` | Deletar task | ❌ |
+| PUT | `/tasks/update-task/{id}` | Atualizar task | ✅ (Bearer — owner) |
+| DELETE | `/tasks/delete-task/{id}` | Deletar task | ✅ (Bearer — owner) |
 | GET | `/admin/users` | Listar todos os usuários | ✅ Admin |
 | GET | `/admin/tasks` | Listar todas as tasks | ✅ Admin |
 | POST | `/admin/create-user` | Criar usuário (admin) | ✅ Admin |
-| POST | `/admin/users/{id}/task` | Criar task (admin) | ✅ Admin |
+| POST | `/admin/users/{id}/task` | Criar task para qualquer usuário (admin) | ✅ Admin |
+| PUT | `/admin/update-user/{id}` | Atualizar usuário (admin) | ✅ Admin |
+| PUT | `/admin/update-task/{id}` | Atualizar task (admin) | ✅ Admin |
 | DELETE | `/admin/users/{id}` | Deletar usuário (admin) | ✅ Admin |
+| DELETE | `/admin/delete-task/{id}` | Deletar task (admin) | ✅ Admin |
 
 ## Como rodar
 
