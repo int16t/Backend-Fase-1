@@ -25,10 +25,14 @@ Backend - Fase 1/
 │   │   ├── tasks.py
 │   │   ├── admin.py
 │   │   └── auth.py
-│   ├── crud/                # Operações de banco (Repository)
+│   ├── repositories/        # Camada de acesso a dados (Repository)
 │   │   ├── __init__.py
-│   │   ├── crud_users.py
-│   │   └── crud_tasks.py
+│   │   ├── user_repository.py
+│   │   └── task_repository.py
+│   ├── services/            # Camada de negócio (Services)
+│   │   ├── __init__.py
+│   │   ├── user_services.py
+│   │   └── task_services.py
 │   ├── auth/                # Lógica de autenticação JWT + bcrypt
 │   │   ├── __init__.py
 │   │   └── auth.py
