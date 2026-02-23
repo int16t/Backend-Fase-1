@@ -41,13 +41,16 @@ def client_fixture(session):
 
 def test_read_tasks(client: testclient.TestClient):
     db_user = client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = db_user.json()["id"]
 
-    client.post(f"/admin/users/{user_id}/task", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id})
-    client.post(f"/admin/users/{user_id}/task", json={"title": "Task 2", "description": "Description of task 2", "user_id": user_id})
-    client.post(f"/admin/users/{user_id}/task", json={"title": "Task 3", "description": "Description of task 3", "user_id": user_id})
+    client.post(f"/admin/users/{user_id}/task", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id}, headers=headers)
+    client.post(f"/admin/users/{user_id}/task", json={"title": "Task 2", "description": "Description of task 2", "user_id": user_id}, headers=headers)
+    client.post(f"/admin/users/{user_id}/task", json={"title": "Task 3", "description": "Description of task 3", "user_id": user_id}, headers=headers)
 
-    response = client.get("/admin/tasks")
+    response = client.get("/admin/tasks", headers=headers)
     tasks = response.json()
     assert response.status_code == 200
     assert len(tasks) >= 1

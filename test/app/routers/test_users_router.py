@@ -58,17 +58,23 @@ def test_read_user_by_email(client: testclient.TestClient):
 
 def test_update_user(client: testclient.TestClient):
     client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = 1
-    updated_user = {"name": "Alice Updated", "email": "alice.updated@example.com"}
-    response = client.put(f"/users/update-user/{user_id}", json=updated_user)
+    updated_user = {"name": "Alice Updated", "email": "alice.updated@example.com", "password":"secret123"}
+    response = client.put(f"/users/update-user/{user_id}", json=updated_user, headers=headers)
     assert response.status_code == 200
     assert response.json() == User_Response(id=user_id, name=updated_user["name"], email=updated_user["email"]).model_dump()
 
 
 def test_delete_user(client: testclient.TestClient):
     client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = 1
-    response = client.delete(f"/users/delete-user/{user_id}")
+    response = client.delete(f"/users/delete-user/{user_id}", headers=headers)
     assert response.status_code == 204
 
 
@@ -109,15 +115,19 @@ def test_read_user_by_email_not_found(client: testclient.TestClient):
 
 def test_update_user_not_found(client: testclient.TestClient):
     client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = 999 
-    updated_user = {"name": "Alice Updated", "email": "alice.updated@example.com"}
-    response = client.put(f"/users/update-user/{user_id}", json=updated_user)
-    assert response.status_code == 404  # User not found
-    assert response.json() == {"detail": "User not found"}
-
+    updated_user = {"name": "Alice Updated", "email": "alice.updated@example.com", "password": "secret123"}
+    response = client.put(f"/users/update-user/{user_id}", json=updated_user, headers=headers)
+    assert response.status_code == 401  # Unauthorized
 
 def test_delete_user_not_found(client: testclient.TestClient):
     client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = 999 
-    response = client.delete(f"/users/delete-user/{user_id}")
-    assert response.status_code == 404  # User not found
+    response = client.delete(f"/users/delete-user/{user_id}", headers=headers)
+    assert response.status_code == 401  # Unauthorized

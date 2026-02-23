@@ -32,7 +32,7 @@ async def email_exists_handler(request: Request, exc: EmailAlreadyExistsError):
 
 @app.exception_handler(NotAllowed)
 async def email_exists_handler(request: Request, exc: NotAllowed):
-    return JSONResponse(status_code=401, content={"detail": f"Page {exc.name} not Allowed!"})
+    return JSONResponse(status_code=401, content={"detail": f"{exc.name}"})
 
 app.include_router(tasks.router)
 app.include_router(users.router)

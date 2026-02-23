@@ -36,18 +36,24 @@ def client_fixture(session):
 
 def test_create_task(client: testclient.TestClient):
     db_user = client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = db_user.json()["id"]
     new_task = {"title": "Task 1", "description": "Description of task 1", "user_id": user_id}
-    response = client.post(f"/users/{user_id}/tasks", json=new_task)
+    response = client.post(f"/users/{user_id}/tasks", json=new_task, headers=headers)
     assert response.status_code == 201
     assert response.json() == schemas.Task_Response(id=1, title=new_task["title"], description=new_task["description"],user_id= 1).model_dump()
 
 
 def test_read_task(client: testclient.TestClient):
     db_user = client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = db_user.json()["id"]
     task_id = 1
-    client.post(f"/users/{user_id}/tasks", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id})
+    client.post(f"/users/{user_id}/tasks", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id}, headers=headers)
     response = client.get(f"/tasks/{task_id}")
     assert response.status_code == 200
     assert response.json() == schemas.Task_Response(id=task_id, title="Task 1", description="Description of task 1", user_id=user_id).model_dump()
@@ -56,48 +62,63 @@ def test_read_task(client: testclient.TestClient):
 def test_update_task(client: testclient.TestClient):
     task_id = 1
     db_user = client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = db_user.json()["id"]
-    client.post(f"/users/{user_id}/tasks", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id})
+    client.post(f"/users/{user_id}/tasks", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id}, headers=headers)
     updated_task = {"title": "Task 1 Updated", "description": "Description of task 1 updated", "user_id": 1 }
-    response = client.put(f"/tasks/update-task/{task_id}", json=updated_task)
+    response = client.put(f"/tasks/update-task/{task_id}", json=updated_task, headers=headers)
     assert response.status_code == 200
     assert response.json() == schemas.Task_Response(id=task_id, title=updated_task["title"], description=updated_task["description"], user_id=updated_task["user_id"]).model_dump()
 
 
 def test_delete_task(client: testclient.TestClient):
     db_user = client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = db_user.json()["id"]
     task_id = 1
-    client.post(f"/users/{user_id}/tasks", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id})
-    response = client.delete(f"/tasks/delete-task/{task_id}")
+    client.post(f"/users/{user_id}/tasks", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id}, headers=headers)
+    response = client.delete(f"/tasks/delete-task/{task_id}", headers=headers)
     assert response.status_code == 204
 
 
 # Verifica se a task não excede o tamanho máximo permitido
 def test_create_task_with_long_title(client: testclient.TestClient):
     db_user = client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = db_user.json()["id"]
     long_title = "T" * 101  # 101 caracteres, excedendo o limite de 100
     new_task = {"title": long_title, "description": "Description of task with long title", "user_id": user_id}
-    response = client.post(f"/users/{user_id}/tasks", json=new_task)
+    response = client.post(f"/users/{user_id}/tasks", json=new_task, headers=headers)
     assert response.status_code == 422  
 
 
 # Verifica se a descrição da task não excede o tamanho máximo permitido
 def test_create_task_with_long_description(client: testclient.TestClient):
     db_user = client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = db_user.json()["id"]
     long_description = "D" * 201  # 201 caracteres, excedendo o limite de 200
     new_task = {"title": "Task with long description", "description": long_description, "user_id": user_id}
-    response = client.post(f"/users/{user_id}/tasks", json=new_task)
+    response = client.post(f"/users/{user_id}/tasks", json=new_task, headers=headers)
     assert response.status_code == 422 
 
 
 def test_create_task_with_empty_title(client: testclient.TestClient):
     db_user = client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = db_user.json()["id"]
     new_task = {"title": "", "description": "Description of task with empty title", "id_user": user_id}
-    response = client.post(f"/users/{user_id}/tasks", json=new_task)
+    response = client.post(f"/users/{user_id}/tasks", json=new_task, headers=headers)
     assert response.status_code == 422  
 
 
@@ -110,8 +131,11 @@ def test_task_not_found(client: testclient.TestClient):
 
 def test_read_task_by_title(client: testclient.TestClient):
     db_user = client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = db_user.json()["id"]
-    client.post(f"/users/{user_id}/tasks", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id})
+    client.post(f"/users/{user_id}/tasks", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id}, headers=headers)
     response = client.get("/tasks/by-title/?title=Task 1")
     assert response.status_code == 200
     assert response.json() == schemas.Task_Response(id=1, title="Task 1", description="Description of task 1", user_id=user_id).model_dump()
@@ -125,19 +149,41 @@ def test_read_task_by_title_not_found(client: testclient.TestClient):
 
 def test_update_task_not_found(client: testclient.TestClient):
     db_user = client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = db_user.json()["id"]
     client.post(f"/users/{user_id}/tasks", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id})    
     task_id = 999 
     updated_task = {"title": "Task 1 Updated", "description": "Description of task 1 updated", "user_id":user_id}
-    response = client.put(f"/tasks/update-task/{task_id}", json=updated_task)
+    response = client.put(f"/tasks/update-task/{task_id}", json=updated_task, headers=headers)
     assert response.status_code == 404  # Task not found
     assert response.json() == {"detail": "Task not found"}
 
 
 def test_delete_task_not_found(client: testclient.TestClient):
     db_user = client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     user_id = db_user.json()["id"]
-    client.post(f"/users/{user_id}/tasks", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id})
+    client.post(f"/users/{user_id}/tasks", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id}, headers=headers)
     task_id = 999 
-    response = client.delete(f"/tasks/delete-task/{task_id}")
+    response = client.delete(f"/tasks/delete-task/{task_id}", headers=headers)
     assert response.status_code == 404  # Task not found
+
+
+def test_delete_task_not_owner(client: testclient.TestClient):
+    db_user1 = client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    user_id1 = db_user1.json()["id"]
+    client.post(f"/users/{user_id1}/tasks", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id1}, headers=headers)
+
+    client.post("/auth/register", json={"name":"Bob","email":"bob@example.com","password":"secret123"})
+    login2 = client.post("/auth/login", data={"username": "bob@example.com", "password": "secret123"})
+    token2 = login2.json()["access_token"]
+    headers2 = {"Authorization": f"Bearer {token2}"}
+    response = client.delete(f"/tasks/delete-task/1", headers=headers2)
+    assert response.status_code in (401, 403)
