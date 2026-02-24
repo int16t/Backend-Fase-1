@@ -1,80 +1,84 @@
-from sqlmodel import Session, select
-from app.models.model_users import User
-from app.repositories import user_repository
+from app.interfaces.i_user_repository import IUserRepository
+from app.models.model_users import User 
 import app.exceptions as exceptions
 from app.auth import auth
 
+class UserService:
 
-def get_all(session: Session, offset: int = 0 , limit: int = 100) -> list[User]:
-    return user_repository.get_all(session, offset, limit)
-
-
-def get_by_id(session: Session, user_id: int)-> User | None:
-    user = user_repository.get_by_id(session, user_id)
-    if not user:
-        raise exceptions.NotFound(name="User")
-    return user
+    def __init__(self, repo:IUserRepository):
+        self.repo = repo
 
 
-def get_by_email(session: Session, email: str)-> User| None:
-    user = user_repository.get_by_email(session, email)
-    if not user:
-        raise exceptions.NotFound(name="User")
-    return user
+    def get_all(self, offset: int = 0 , limit: int = 100) -> list[User]:
+        return self.repo.get_all(offset, limit)
 
 
-def get_by_name(session: Session, name: str, offset: int = 0, limit: int = 100)-> list[User]:
-    return user_repository.get_by_name(session, name, offset, limit)
-    
-
-def create(session: Session, name: str, email: str, password: str)-> User:
-    existing = user_repository.get_by_email(session, email)
-    if existing:
-        raise exceptions.EmailAlreadyExistsError(email=email)
-    password_hash = auth.hash_password(password)
-    user = User(name=name, email=email, password_hash=password_hash)
-    return user_repository.save(session, user)
+    def get_by_id(self, user_id: int)-> User | None:
+        user = self.repo.get_by_id(user_id)
+        if not user:
+            raise exceptions.NotFound(name="User")
+        return user
 
 
-def update(session: Session, name: str, email: str, password: str, user_id, current_user_id: int)-> User:
-    if user_id != current_user_id:
-        raise exceptions.NotAllowed("You can only update your own user!")
-    user = user_repository.get_by_id(session, user_id)
-    if not user:
-        raise exceptions.NotFound(name="User")
-    user.name = name
-    user.email = email
-    verify = auth.verify_password(password, user.password_hash)
-    if not verify:
+    def get_by_email(self, email: str)-> User| None:
+        user = self.repo.get_by_email(email)
+        if not user:
+            raise exceptions.NotFound(name="User")
+        return user
+
+
+    def get_by_name(self, name: str, offset: int = 0, limit: int = 100)-> list[User]:
+        return self.repo.get_by_name(name, offset, limit)
+        
+
+    def create(self, name: str, email: str, password: str)-> User:
+        existing = self.repo.get_by_email(email)
+        if existing:
+            raise exceptions.EmailAlreadyExistsError(email=email)
         password_hash = auth.hash_password(password)
-        user.password_hash = password_hash
-    return user_repository.update(session, user)
+        user = User(name=name, email=email, password_hash=password_hash)
+        return self.repo.save(user)
 
 
-def update_admin(session: Session, name: str, email: str, password: str, user_id)-> User:
-    user = user_repository.get_by_id(session, user_id)
-    if not user:
-        raise exceptions.NotFound(name="User")
-    user.name = name
-    user.email = email
-    verify = auth.verify_password(password, user.password_hash)
-    if not verify:
-        password_hash = auth.hash_password(password)
-        user.password_hash = password_hash
-    return user_repository.update(session, user)
+    def update(self, name: str, email: str, password: str, user_id, current_user_id: int)-> User:
+        if user_id != current_user_id:
+            raise exceptions.NotAllowed("You can only update your own user!")
+        user = self.repo.get_by_id(user_id)
+        if not user:
+            raise exceptions.NotFound(name="User")
+        user.name = name
+        user.email = email
+        verify = auth.verify_password(password, user.password_hash)
+        if not verify:
+            password_hash = auth.hash_password(password)
+            user.password_hash = password_hash
+        return self.repo.update(user)
 
 
-def delete_common(session: Session, user_id: int, current_user_id: int):
-    if user_id != current_user_id:
-        raise exceptions.NotAllowed("You can only delete your own user!")
-    user = user_repository.get_by_id(session, user_id)
-    if not user:
-        raise exceptions.NotFound(name="User")
-    return user_repository.delete(session, user)
+    def update_admin(self, name: str, email: str, password: str, user_id)-> User:
+        user = self.repo.get_by_id(user_id)
+        if not user:
+            raise exceptions.NotFound(name="User")
+        user.name = name
+        user.email = email
+        verify = auth.verify_password(password, user.password_hash)
+        if not verify:
+            password_hash = auth.hash_password(password)
+            user.password_hash = password_hash
+        return self.repo.update(user)
 
 
-def delete(session: Session, user_id: int):
-    user = user_repository.get_by_id(session, user_id)
-    if not user:
-        raise exceptions.NotFound(name="User")
-    return user_repository.delete(session, user)
+    def delete_common(self, user_id: int, current_user_id: int):
+        if user_id != current_user_id:
+            raise exceptions.NotAllowed("You can only delete your own user!")
+        user = self.repo.get_by_id(user_id)
+        if not user:
+            raise exceptions.NotFound(name="User")
+        return self.repo.delete(user)
+
+
+    def delete(self, user_id: int):
+        user = self.repo.get_by_id(user_id)
+        if not user:
+            raise exceptions.NotFound(name="User")
+        return self.repo.delete(user)

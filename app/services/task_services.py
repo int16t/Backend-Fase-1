@@ -1,80 +1,85 @@
-from sqlmodel import Session
 from app.models.model_tasks import Task
-from app.repositories import task_repository
 import app.exceptions as exceptions
+from app.interfaces.i_task_repository import ITaskRepository
 
 
-def get_all(session: Session, offset: int = 0, limit: int = 100) -> list[Task]:
-    return task_repository.get_all(session, offset, limit)
+class TaskService:
+
+    def __init__(self, repo:ITaskRepository):
+        self.repo = repo
 
 
-def get_by_id(session: Session, task_id: int) -> Task:
-    task = task_repository.get_by_id(session, task_id)
-    if not task:
-        raise exceptions.NotFound(name="Task")
-    return task
+    def get_all(self, offset: int = 0, limit: int = 100) -> list[Task]:
+        return self.repo.get_all(offset, limit)
 
 
-def get_by_title(session: Session, title: str)-> Task:
-    task = task_repository.get_task_by_title(session, title)
-    if not task:
-        raise exceptions.NotFound(name="Task")
-    return task
+    def get_by_id(self, task_id: int) -> Task:
+        task = self.repo.get_by_id(task_id)
+        if not task:
+            raise exceptions.NotFound(name="Task")
+        return task
 
 
-def get_per_user(session: Session, user_id: int)-> list[Task]:
-    tasks = task_repository.get_tasks_per_user(session, user_id)
-    if not tasks:
-        raise exceptions.NotFound(name="Tasks")
-    return tasks
+    def get_by_title(self, title: str)-> Task:
+        task = self.repo.get_task_by_title(title)
+        if not task:
+            raise exceptions.NotFound(name="Task")
+        return task
 
 
-def create(session: Session, title: str, description: str, user_id: int, current_user_id: int) -> Task:
-    if user_id != current_user_id:
-        raise exceptions.NotAllowed("You can only create tasks for your own user!")
-    task = Task(title=title, description=description, user_id=user_id)
-    return task_repository.save(session, task)
+    def get_per_user(self, user_id: int)-> list[Task]:
+        tasks = self.repo.get_tasks_per_user(user_id)
+        if not tasks:
+            raise exceptions.NotFound(name="Tasks")
+        return tasks
 
 
-def create_admin(session: Session, title: str, description: str, user_id: int) -> Task:
-    # Admins can create tasks for any user without ownership check
-    task = Task(title=title, description=description, user_id=user_id)
-    return task_repository.save(session, task)
+    def create(self, title: str, description: str, user_id: int, current_user_id: int) -> Task:
+        if user_id != current_user_id:
+            raise exceptions.NotAllowed("You can only create tasks for your own user!")
+        task = Task(title=title, description=description, user_id=user_id)
+        return self.repo.save(task)
 
 
-def update(session: Session, title: str, description: str, task_id: int, user_id: int) -> Task:
-    task = task_repository.get_by_id(session, task_id)
-    if not task:
-        raise exceptions.NotFound(name="Task")
-    if task.user_id != user_id:
-        raise exceptions.NotAllowed("You can only update your own tasks!")
-    task.title = title
-    task.description = description
-    return task_repository.update(session, task)
+    def create_admin(self, title: str, description: str, user_id: int) -> Task:
+        # Admins can create tasks for any user without ownership check
+        task = Task(title=title, description=description, user_id=user_id)
+        return self.repo.save(task)
 
 
-def update_admin(session: Session, title: str, description: str, task_id: int) -> Task:
-    task = task_repository.get_by_id(session, task_id)
-    if not task:
-        raise exceptions.NotFound(name="Task")
-    task.title = title
-    task.description = description
-    task.id = task_id
-    return task_repository.update(session, task)
+    def update(self, title: str, description: str, task_id: int, user_id: int) -> Task:
+        task = self.repo.get_by_id(task_id)
+        if not task:
+            raise exceptions.NotFound(name="Task")
+        if task.user_id != user_id:
+            raise exceptions.NotAllowed("You can only update your own tasks!")
+        task.title = title
+        task.description = description
+        return self.repo.update(task)
 
 
-def delete_admin(session: Session, task_id: int):
-    task = task_repository.get_by_id(session, task_id)
-    if not task:
-        raise exceptions.NotFound(name="Task")
-    return task_repository.delete(session, task)
+    def update_admin(self, title: str, description: str, task_id: int) -> Task:
+        task = self.repo.get_by_id(task_id)
+        if not task:
+            raise exceptions.NotFound(name="Task")
+        task.title = title
+        task.description = description
+        task.id = task_id
+        return self.repo.update(task)
 
 
-def delete_common(session: Session, task_id: int, user_id: int):
-    task = task_repository.get_by_id(session, task_id)
-    if not task:
-        raise exceptions.NotFound(name="Task")
-    if task.user_id != user_id:
-        raise exceptions.NotAllowed("You can only delete your own tasks!")
-    task_repository.delete(session, task)
-    return True
+    def delete_admin(self, task_id: int):
+        task = self.repo.get_by_id(task_id)
+        if not task:
+            raise exceptions.NotFound(name="Task")
+        return self.repo.delete(task)
+
+
+    def delete_common(self, task_id: int, user_id: int):
+        task = self.repo.get_by_id(task_id)
+        if not task:
+            raise exceptions.NotFound(name="Task")
+        if task.user_id != user_id:
+            raise exceptions.NotAllowed("You can only delete your own tasks!")
+        self.repo.delete(task)
+        return True
