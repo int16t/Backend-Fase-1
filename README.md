@@ -25,6 +25,10 @@ Backend - Fase 1/
 │   │   ├── tasks.py
 │   │   ├── admin.py
 │   │   └── auth.py
+│   ├── interfaces/          # Interfaces/contratos das camadas (ABC)
+│   │   ├── __init__.py
+│   │   ├── i_user_repository.py
+│   │   └── i_task_repository.py
 │   ├── repositories/        # Camada de acesso a dados (Repository)
 │   │   ├── __init__.py
 │   │   ├── user_repository.py
