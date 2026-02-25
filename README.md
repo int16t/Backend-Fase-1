@@ -68,14 +68,14 @@ Backend - Fase 1/
 |--------|------|-----------|------|
 | POST | `/auth/register` | Cadastrar usuário | ❌ |
 | POST | `/auth/login` | Login (retorna JWT) | ❌ |
-| GET | `/users/{id}` | Buscar usuário por ID | ❌ |
-| GET | `/users/by-email/` | Buscar usuário por email | ❌ |
-| GET | `/users/{id}/tasks` | Listar tasks do usuário | ❌ |
+| GET | `/users/{id}` | Buscar usuário por ID | ✅ (Bearer — owner) |
+| GET | `/users/by-email/` | Buscar usuário por email | ✅ (Bearer — owner) |
+| GET | `/users/{id}/tasks` | Listar tasks do usuário | ✅ (Bearer — owner) |
 | POST | `/users/{id}/tasks` | Criar task para usuário | ✅ (Bearer — owner) |
 | PUT | `/users/update-user/{id}` | Atualizar usuário | ✅ (Bearer — owner) |
 | DELETE | `/users/delete-user/{id}` | Deletar usuário | ✅ (Bearer — owner) |
-| GET | `/tasks/{id}` | Buscar task por ID | ❌ |
-| GET | `/tasks/by-title/` | Buscar task por título | ❌ |
+| GET | `/tasks/{id}` | Buscar task por ID | ✅ (Bearer — owner) |
+| GET | `/tasks/by-title/` | Buscar task por título | ✅ (Bearer — owner) |
 | PUT | `/tasks/update-task/{id}` | Atualizar task | ✅ (Bearer — owner) |
 | DELETE | `/tasks/delete-task/{id}` | Deletar task | ✅ (Bearer — owner) |
 | GET | `/admin/users` | Listar todos os usuários | ✅ Admin |
@@ -84,7 +84,7 @@ Backend - Fase 1/
 | POST | `/admin/users/{id}/task` | Criar task para qualquer usuário (admin) | ✅ Admin |
 | PUT | `/admin/update-user/{id}` | Atualizar usuário (admin) | ✅ Admin |
 | PUT | `/admin/update-task/{id}` | Atualizar task (admin) | ✅ Admin |
-| DELETE | `/admin/users/{id}` | Deletar usuário (admin) | ✅ Admin |
+| DELETE | `/admin/delete-user/{id}` | Deletar usuário (admin) | ✅ Admin |
 | DELETE | `/admin/delete-task/{id}` | Deletar task (admin) | ✅ Admin |
 
 ## Como rodar
