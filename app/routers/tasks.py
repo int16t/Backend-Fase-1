@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies.services import TaskServiceDep
 import app.schemas.task_schemas as schemas
 from app.dependencies.authorization import verify_own_task
+from app.dependencies.auth import get_current_user
 from app.models.model_tasks import Task
+from app.models.model_users import User
 
 router = APIRouter(
     prefix="/tasks",
@@ -11,13 +13,16 @@ router = APIRouter(
 
 
 @router.get("/{task_id}")
-async def read_task(task_id: int, service: TaskServiceDep):
+async def read_task(task_id: int, service: TaskServiceDep, current_user: User = Depends(verify_own_task)):
     return service.get_by_id(task_id)
 
 
 @router.get("/by-title/")
-async def read_task_by_title(title: str, service: TaskServiceDep):
-    return service.get_by_title(title)
+async def read_task_by_title(title: str, service: TaskServiceDep, current_user: User = Depends(get_current_user)):
+    task = service.get_by_title(title)
+    if task.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only view your own tasks!")
+    return task
 
 
 @router.put("/update-task/{task_id}", status_code=200)

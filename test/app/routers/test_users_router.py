@@ -43,15 +43,19 @@ def test_create_user(client: testclient.TestClient):
 
 def test_read_user(client: testclient.TestClient):
     client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
     user_id = 1
-    response = client.get(f"/users/{user_id}")
+    response = client.get(f"/users/{user_id}", headers=headers)
     assert response.status_code == 200
     assert response.json() == User_Response(id=user_id, name="Alice", email="alice@example.com").model_dump()
 
 
 def test_read_user_by_email(client: testclient.TestClient):
     client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
-    response = client.get("/users/by-email/?email=alice@example.com")
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+    response = client.get("/users/by-email/?email=alice@example.com", headers=headers)
     assert response.status_code == 200
     assert response.json() == User_Response(id=1, name="Alice", email="alice@example.com").model_dump()
 
@@ -100,17 +104,20 @@ def test_create_user_with_invalid_email(client: testclient.TestClient):
 
 
 def test_user_not_found(client: testclient.TestClient):
-    user_id = 999  # ID que não existe
-    response = client.get(f"/users/{user_id}")
-    assert response.status_code == 404  # User not found
-    assert response.json() == {"detail": "User not found"}
+    client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+    user_id = 999  # ID que não existe nem pertence ao usuário
+    response = client.get(f"/users/{user_id}", headers=headers)
+    assert response.status_code == 403  # ownership check falha antes de buscar no banco
 
 
 def test_read_user_by_email_not_found(client: testclient.TestClient):
     client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
-    response = client.get("/users/by-email/?email=test@example.com")
-    assert response.status_code == 404  # User not found
-    assert response.json() == {"detail": "User not found"}
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+    response = client.get("/users/by-email/?email=test@example.com", headers=headers)
+    assert response.status_code == 403  # email não pertence ao usuário autenticado
 
 
 def test_update_user_not_found(client: testclient.TestClient):

@@ -54,7 +54,7 @@ def test_read_task(client: testclient.TestClient):
     user_id = db_user.json()["id"]
     task_id = 1
     client.post(f"/users/{user_id}/tasks", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id}, headers=headers)
-    response = client.get(f"/tasks/{task_id}")
+    response = client.get(f"/tasks/{task_id}", headers=headers)
     assert response.status_code == 200
     assert response.json() == schemas.Task_Response(id=task_id, title="Task 1", description="Description of task 1", user_id=user_id).model_dump()
 
@@ -123,8 +123,11 @@ def test_create_task_with_empty_title(client: testclient.TestClient):
 
 
 def test_task_not_found(client: testclient.TestClient):
+    client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
     task_id = 999  # ID que não existe
-    response = client.get(f"/tasks/{task_id}")
+    response = client.get(f"/tasks/{task_id}", headers=headers)
     assert response.status_code == 404  # Task not found
     assert response.json() == {"detail": "Task not found"}
 
@@ -136,13 +139,16 @@ def test_read_task_by_title(client: testclient.TestClient):
     headers = {"Authorization": f"Bearer {token}"}
     user_id = db_user.json()["id"]
     client.post(f"/users/{user_id}/tasks", json={"title": "Task 1", "description": "Description of task 1", "user_id": user_id}, headers=headers)
-    response = client.get("/tasks/by-title/?title=Task 1")
+    response = client.get("/tasks/by-title/?title=Task 1", headers=headers)
     assert response.status_code == 200
     assert response.json() == schemas.Task_Response(id=1, title="Task 1", description="Description of task 1", user_id=user_id).model_dump()
 
 
 def test_read_task_by_title_not_found(client: testclient.TestClient):
-    response = client.get("/tasks/by-title/?title=Nonexistent Task")
+    client.post("/auth/register", json={"name":"Alice","email":"alice@example.com","password":"secret123"})
+    login = client.post("/auth/login", data={"username": "alice@example.com", "password": "secret123"})
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+    response = client.get("/tasks/by-title/?title=Nonexistent Task", headers=headers)
     assert response.status_code == 404
     assert response.json() == {"detail": "Task not found"}
 
