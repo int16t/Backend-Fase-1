@@ -5,7 +5,7 @@ import app.schemas.task_schemas as schemas_task
 from app.models.model_users import User
 from app.dependencies.authorization import verify_own_user
 from app.dependencies.auth import get_current_user
-from app.limiter import limiter
+from app.limiter import user_limiter
 
 
 router = APIRouter(
@@ -32,7 +32,7 @@ async def read_user_by_email(email: str, service: UserServiceDep, current_user: 
 
 
 @router.post("/{user_id}/tasks", status_code=201)
-@limiter.limit("20/minute")
+@user_limiter.limit("20/minute;200/day")
 async def create_task_for_user(request: Request, task: schemas_task.Task_Create, service: TaskServiceDep, current_user: User = Depends(verify_own_user)):
     return service.create(title=task.title, description=task.description, user_id=task.user_id)
 
