@@ -1,24 +1,13 @@
-from app.database import SessionDep
 from fastapi import APIRouter, Depends
-from typing import Annotated
+from app.dependencies.services import TaskServiceDep
 import app.schemas.task_schemas as schemas
-from app.dependencies import auth
-from app.services.task_services import TaskService
-from app.repositories.task_repository import TaskRepository
-
+from app.dependencies.authorization import verify_own_task
+from app.models.model_tasks import Task
 
 router = APIRouter(
     prefix="/tasks",
     tags=["tasks"],
 )
-
-
-def get_task_service(session: SessionDep) -> TaskService:
-    repo = TaskRepository(session)        # concreto criado aqui
-    return TaskService(repo)              # service recebe a abstracao
-
-
-TaskServiceDep = Annotated[TaskService, Depends(get_task_service)]
 
 
 @router.get("/{task_id}")
@@ -32,10 +21,10 @@ async def read_task_by_title(title: str, service: TaskServiceDep):
 
 
 @router.put("/update-task/{task_id}", status_code=200)
-async def update_task(task_id: int, task: schemas.Task_Update, service: TaskServiceDep, user=Depends(auth.get_current_user)):
-    return service.update(task_id=task_id, title=task.title, description=task.description, user_id=user.id)
+async def update_task(task_id: int, task: schemas.Task_Update, service: TaskServiceDep, current_task: Task = Depends(verify_own_task)):
+    return service.update(task_id=task_id, title=task.title, description=task.description)
 
 
 @router.delete("/delete-task/{task_id}", status_code=204)
-async def delete_task(service: TaskServiceDep, task_id: int, user=Depends(auth.get_current_user)):
-    return service.delete_common(task_id=task_id, user_id=user.id)
+async def delete_task(service: TaskServiceDep, task_id: int, current_task: Task = Depends(verify_own_task)):
+    return service.delete(task_id=task_id)

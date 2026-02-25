@@ -40,9 +40,7 @@ class UserService:
         return self.repo.save(user)
 
 
-    def update(self, name: str, email: str, password: str, user_id, current_user_id: int)-> User:
-        if user_id != current_user_id:
-            raise exceptions.NotAllowed("You can only update your own user!")
+    def update(self, name: str, email: str, password: str, user_id)-> User:
         user = self.repo.get_by_id(user_id)
         if not user:
             raise exceptions.NotFound(name="User")
@@ -53,28 +51,6 @@ class UserService:
             password_hash = auth.hash_password(password)
             user.password_hash = password_hash
         return self.repo.update(user)
-
-
-    def update_admin(self, name: str, email: str, password: str, user_id)-> User:
-        user = self.repo.get_by_id(user_id)
-        if not user:
-            raise exceptions.NotFound(name="User")
-        user.name = name
-        user.email = email
-        verify = auth.verify_password(password, user.password_hash)
-        if not verify:
-            password_hash = auth.hash_password(password)
-            user.password_hash = password_hash
-        return self.repo.update(user)
-
-
-    def delete_common(self, user_id: int, current_user_id: int):
-        if user_id != current_user_id:
-            raise exceptions.NotAllowed("You can only delete your own user!")
-        user = self.repo.get_by_id(user_id)
-        if not user:
-            raise exceptions.NotFound(name="User")
-        return self.repo.delete(user)
 
 
     def delete(self, user_id: int):
