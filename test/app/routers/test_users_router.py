@@ -121,7 +121,7 @@ def test_update_user_not_found(client: testclient.TestClient):
     user_id = 999 
     updated_user = {"name": "Alice Updated", "email": "alice.updated@example.com", "password": "secret123"}
     response = client.put(f"/users/update-user/{user_id}", json=updated_user, headers=headers)
-    assert response.status_code == 401  # Unauthorized
+    assert response.status_code == 403
 
 def test_delete_user_not_found(client: testclient.TestClient):
     client.post("/auth/register", json={"name": "Alice", "email": "alice@example.com", "password": "secret123"})
@@ -130,4 +130,4 @@ def test_delete_user_not_found(client: testclient.TestClient):
     headers = {"Authorization": f"Bearer {token}"}
     user_id = 999 
     response = client.delete(f"/users/delete-user/{user_id}", headers=headers)
-    assert response.status_code == 401  # Unauthorized
+    assert response.status_code == 403
