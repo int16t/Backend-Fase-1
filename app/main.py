@@ -5,6 +5,9 @@ from app.routers import tasks, users, admin, auth
 from app.models import *  # Importa os modelos para registrar no SQLModel.metadata
 from fastapi.responses import JSONResponse
 import uvicorn
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.limiter import limiter
 
 
 @asynccontextmanager
@@ -21,6 +24,9 @@ app = FastAPI(lifespan=lifespan)
 async def root_directory() -> str:
     return "Hello, World!"
 
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.exception_handler(NotFound)
 async def not_found_handler(request: Request, exc: NotFound):

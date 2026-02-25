@@ -13,7 +13,7 @@ bcrypt==5.0.0
 python-jose==3.5.0
 python-multipart==0.0.22
 python-dotenv==1.2.1
-
+slowapi==0.1.9
 
 #testing
 pytest==9.0.2
