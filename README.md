@@ -7,7 +7,7 @@ Backend - Fase 1/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py              # Ponto de entrada FastAPI
-│   ├── config.py            # Configurações (DATABASE_URL, SECRET_KEY) — não commitar
+│   ├── config.py            # Configurações (DATABASE_URL, SECRET_KEY)
 │   ├── database.py          # Conexão SQLAlchemy/SQLModel
 │   ├── exceptions.py        # Exceções customizadas
 │   ├── limiter.py           # Instância global do rate limiter (slowapi)
