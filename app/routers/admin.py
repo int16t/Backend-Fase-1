@@ -52,7 +52,7 @@ async def update_task(task_id: int, task: schemas_task.Task_Update, service: Tas
     return service.update(task_id=task_id, title=task.title, description=task.description)
 
 
-@router.delete("/users/{user_id}", status_code=204)
+@router.delete("/delete-user/{user_id}", status_code=204)
 async def delete_user(user_id: int, service: UserServiceDep):
     return service.delete(user_id=user_id)
 
