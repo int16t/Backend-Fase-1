@@ -10,6 +10,7 @@ Backend - Fase 1/
 │   ├── config.py            # Configurações (DATABASE_URL, SECRET_KEY) — não commitar
 │   ├── database.py          # Conexão SQLAlchemy/SQLModel
 │   ├── exceptions.py        # Exceções customizadas
+│   ├── limiter.py           # Instância global do rate limiter (slowapi)
 │   ├── models/              # Modelos SQLModel (tabelas do banco)
 │   │   ├── __init__.py
 │   │   ├── model_users.py
@@ -40,14 +41,17 @@ Backend - Fase 1/
 │   ├── auth/                # Lógica de autenticação JWT + bcrypt
 │   │   ├── __init__.py
 │   │   └── auth.py
-│   └── dependencies/        # Dependências FastAPI (guards de autenticação)
+│   └── dependencies/        # Dependências FastAPI (injeção e guards)
 │       ├── __init__.py
-│       └── auth.py
+│       ├── auth.py          # Extração e validação do token JWT
+│       ├── authorization.py # Guards de autorização (owner, admin)
+│       └── services.py      # Injeção de dependência dos Services
 ├── alembic/                 # Migrações de banco
 │   ├── versions/
 │   ├── env.py
 │   └── script.py.mako
 ├── test/                    # Testes automatizados
+│   ├── conftest.py          # Fixtures globais (reset do rate limiter)
 │   └── app/
 │       └── routers/
 │           ├── test_users_router.py
