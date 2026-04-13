@@ -1,5 +1,9 @@
 # Projeto Backend - Fase 1
 
+## Sobre
+
+Backend desenvolvido usando FastAPI seguindo princípios SOLID, contendo sistema de autenticação, versionamento do BD e criação de testes utilizando BD dinâmico.
+
 ## Estrutura de Pastas
 
 ```bash
